@@ -16,12 +16,20 @@ request(data_url, {json: true}, (err, res) => {
 app.get('/search', function (req, res) {
   let filters = req.query.filters ? JSON.parse(req.query.filters) : undefined;
 
-  var result = itemsjs.search({
-    per_page: req.query.per_page || 10,
-    page: req.query.page || 1,
-    filters: filters
-  });
-  res.json(result);
+ function waitForIndex() {
+    if (itemsjs) {
+      const result = itemsjs.search({
+        per_page: req.query.per_page || 10,
+        page: req.query.page || 1,
+        filters: filters
+      })
+      res.json(result)
+    } else {
+      console.log("index still not ready-wait")
+      setTimeout(waitForIndex, 100)
+    }
+  }
+  waitForIndex();
 })
 
 app.listen(PORT, function () {
